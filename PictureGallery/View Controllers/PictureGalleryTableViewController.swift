@@ -23,31 +23,59 @@ class PictureGalleryTableViewController: UITableViewController {
 
     // MARK: - Table view data source
 
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        return 2
+    }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        return PictureController.shared.pictures.count
+       // return PictureController.shared.pictures.count
+        
+        switch section {
+        case 0:
+            return PictureController.shared.isLiked.count
+        case 1:
+            return PictureController.shared.isUnliked.count
+        default:
+           return 0
+        }
     }
 
    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "pictureCell", for: indexPath) as! PictureGalleryTableViewCell
 
-        let pictureGallery = PictureController.shared.pictures[indexPath.row]
+     //   let pictureGallery = PictureController.shared.pictures[indexPath.row]
+        var picture: Picture!
+        if indexPath.section == 0 {
+            picture = PictureController.shared.isLiked[indexPath.row]
+        } else if indexPath.section == 1 {
+            picture = PictureController.shared.isUnliked[indexPath.row]
+        }
         
-        cell.picture = pictureGallery
+        cell.picture = picture
         cell.delegate = self
      
         return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        if section == 0 && PictureController.shared.isLiked.count > 0 {
+            return "Liked Pictures"
+        } else if section == 1 && PictureController.shared.isUnliked.count > 0 {
+            return "Unliked Pictures"
+        } else {
+            return nil
+        }
     }
 
     // Override to support editing the table view.
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             
-            PictureController.shared.delete(picture: PictureController.shared.pictures[indexPath.row])
+            PictureController.shared.delete(picture: pictureFor(indexPath: indexPath))
             // Delete the row from the data source
-            tableView.deleteRows(at: [indexPath], with: .fade)
+            tableView.reloadData()
         }
     }
    
@@ -67,9 +95,19 @@ class PictureGalleryTableViewController: UITableViewController {
 extension PictureGalleryTableViewController: PhotoTableViewCellDelegate {
     func tappedLikeButton(on cell: PictureGalleryTableViewCell) {
         guard let indexPath = tableView.indexPath(for: cell) else {return}
-        PictureController.shared.toggleIsLiked(on: indexPath.row)
-        tableView.reloadRows(at: [indexPath], with: .none)
+        let picture = pictureFor(indexPath: indexPath)
+    
+        PictureController.shared.updateIsLiked(for: picture)
+    
+        tableView.reloadData()
     }
     
+    private func pictureFor(indexPath: IndexPath) -> Picture {
+        if indexPath.section == 0 {
+            return PictureController.shared.isLiked[indexPath.row]
+        } else {
+            return PictureController.shared.isUnliked[indexPath.row]
+        }
+    }
     
 }

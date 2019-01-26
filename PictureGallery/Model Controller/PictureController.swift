@@ -20,6 +20,14 @@ class PictureController {
     
     private(set) var pictures: [Picture] = []
     
+    var isLiked: [Picture] {
+        return pictures.filter({$0.isLiked})
+    }
+    
+    var isUnliked: [Picture] {
+        return pictures.filter({!$0.isLiked})
+    }
+    
     //MARK: - CRUD
     
     func create(picture: Data, title: String){
@@ -34,10 +42,24 @@ class PictureController {
         saveToPersistentStore()
     }
     
-    func toggleIsLiked(on index: Int) {
-        pictures[index].isLiked = !pictures[index].isLiked
+//    func toggleIsLiked(on index: Int) {
+//        pictures[index].isLiked = !pictures[index].isLiked
+//        saveToPersistentStore()
+//    }
+    
+    func updateIsLiked(for picture: Picture) {
+        guard let index = pictures.index(of: picture) else {return}
+        //turn it from a constant to a variable
+        var picture = pictures[index]
+        picture.isLiked = !picture.isLiked
+        //swap it.
+        pictures.remove(at: index)
+        pictures.insert(picture, at: index)
         saveToPersistentStore()
     }
+    
+    
+    
     
     //MARK: - Persistance Functions
     
